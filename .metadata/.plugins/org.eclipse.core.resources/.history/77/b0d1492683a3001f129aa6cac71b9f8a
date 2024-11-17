@@ -1,0 +1,335 @@
+package ui;
+
+import javax.swing.*;
+import java.awt.*;
+import java.util.ArrayList;
+import java.util.Collections;
+
+public class Login extends JFrame {
+    private static final long serialVersionUID = 1L;
+    private final String PASSWORD = "1234";  // Contraseña fija
+    private int intentosRestantes = 3;       // Intentos permitidos
+    private ArrayList<JLabel> circles = new ArrayList<>(); // Círculos que muestran la clave ingresada
+    private ArrayList<JButton> buttons = new ArrayList<>();
+    private StringBuilder currentPassword = new StringBuilder(); // Para almacenar los números ingresados
+    private JPanel keypadPanel;  // Panel del teclado numérico para poder reordenar los botones
+
+    public Login() {
+        setTitle("Yape Login");
+        setSize(400, 700);
+        setDefaultCloseOperation(EXIT_ON_CLOSE);
+        setLocationRelativeTo(null);  // Centrar la ventana
+        setResizable(false);
+
+        // Establecer el color púrpura como fondo del JFrame
+        getContentPane().setBackground(new Color(97, 32, 123)); // Color púrpura
+
+        // Panel principal dividido en dos secciones
+        JPanel mainPanel = new JPanel();
+        mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
+        mainPanel.setOpaque(false); // Mantener transparente para que se vea el color del fondo
+
+        // Crear y agregar las mitades superior e inferior
+        mainPanel.add(createTopPanel());
+        mainPanel.add(createBottomPanel());
+
+        // Añadir el panel principal a la ventana
+        add(mainPanel);
+        setVisible(true);
+    }
+
+    private JPanel createTopPanel() {
+        JPanel topPanel = new JPanel() {
+            private static final long serialVersionUID = 1L;
+
+            @Override
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                if (g instanceof Graphics2D) {
+                    Graphics2D g2 = (Graphics2D) g;
+                    g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+                    // Crear el degradado de púrpura muy claro al púrpura original
+                    Color purpleVeryLight = new Color(140, 61, 153);
+                    Color purpleLight = new Color(112, 34, 129);
+                    Color purpleOriginal = new Color(75, 25, 113);
+                    
+                    float[] fractions = {0.0f, 0.5f, 1.0f};
+                    Color[] colors = {purpleVeryLight, purpleLight, purpleOriginal};
+                    LinearGradientPaint gradient = new LinearGradientPaint(
+                        0, 0,
+                        0, getHeight() + 10,
+                        fractions,
+                        colors
+                    );
+                    
+                    g2.setPaint(gradient);
+                    g2.fillRect(0, 0, getWidth(), getHeight());
+                }
+            }
+        };
+        topPanel.setPreferredSize(new Dimension(400, 350));
+        topPanel.setLayout(null);
+
+        // Botón de ayuda
+        JButton helpButton = new JButton("Ayuda") {
+            @Override
+            protected void paintComponent(Graphics g) {
+                if (g instanceof Graphics2D) {
+                    Graphics2D g2 = (Graphics2D) g;
+                    g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                    g2.setColor(new Color(130, 51, 163));
+                    g2.fillRoundRect(0, 0, getWidth(), getHeight(), 20, 40);
+                }
+                super.paintComponent(g);
+            }
+        };
+
+        helpButton.setFont(new Font("Arial", Font.BOLD, 12)); // Cambiado a BOLD para texto más ancho
+        helpButton.setForeground(Color.WHITE);
+        helpButton.setBounds(280, 10, 80, 30);
+        helpButton.setFocusPainted(false);
+        helpButton.setBorderPainted(false);
+        helpButton.setContentAreaFilled(false);
+
+        // Agregar icono a la izquierda
+        ImageIcon helpIcon = new ImageIcon("src/ui/img/help_icon.png");
+        Image scaledHelpIcon = helpIcon.getImage().getScaledInstance(15, 15, Image.SCALE_SMOOTH);
+        helpButton.setIcon(new ImageIcon(scaledHelpIcon));
+        helpButton.setIconTextGap(5);
+        helpButton.setHorizontalTextPosition(SwingConstants.RIGHT);
+        helpButton.setVerticalTextPosition(SwingConstants.CENTER);
+
+        helpButton.addActionListener(e -> JOptionPane.showMessageDialog(this, "Por favor, contacta al soporte para ayuda."));
+        topPanel.add(helpButton); // Asegurarse de que esto se ejecute
+
+        // QR Label
+        ImageIcon originalIcon = new ImageIcon("src/ui/img/QrEider.jpg");
+        Image scaledImage = originalIcon.getImage().getScaledInstance(150, 150, Image.SCALE_SMOOTH);
+        ImageIcon scaledIcon = new ImageIcon(scaledImage);
+
+        JLabel qrLabel = new JLabel() {
+            @Override
+            protected void paintComponent(Graphics g) {
+                if (g instanceof Graphics2D) {
+                    Graphics2D g2 = (Graphics2D) g;
+                    g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                    
+                    // Crear la forma redondeada
+                    int radius = 15; // Radio de las esquinas redondeadas
+                    int width = getWidth();
+                    int height = getHeight();
+                    
+                    // Dibujar la imagen con esquinas redondeadas
+                    g2.setClip(new java.awt.geom.RoundRectangle2D.Float(0, 0, width, height, radius, radius));
+                    g2.drawImage(scaledImage, 0, 0, width, height, this);
+                }
+            }
+        };
+
+        qrLabel.setBounds(125, 50, 150, 150);
+        qrLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        qrLabel.setVerticalAlignment(SwingConstants.CENTER);
+        topPanel.add(qrLabel);
+
+        return topPanel;
+    }
+    private JPanel createBottomPanel() {
+        JPanel bottomPanel = new JPanel() {
+            private static final long serialVersionUID = 1L;
+
+            @Override
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                if (g instanceof Graphics2D) {
+                    Graphics2D g2 = (Graphics2D) g;
+                    g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+                    // Crear el degradado de púrpura para la parte inferior
+                    Color purpleLight = new Color(75, 25, 113);      // Púrpura medio claro
+                    Color purpleOriginal = new Color(75, 25, 113);    // Púrpura original
+                    
+                    // Crear un degradado que continúe desde el panel superior
+                    float[] fractions = {0.0f, 1.0f};
+                    Color[] colors = {purpleLight, purpleOriginal};
+                    LinearGradientPaint gradient = new LinearGradientPaint(
+                        0, 0,                    // punto inicial
+                        0, getHeight(),          // punto final
+                        fractions,
+                        colors
+                    );
+                    
+                    g2.setPaint(gradient);
+                    g2.fillRect(0, 0, getWidth(), getHeight());
+
+                    // Parte blanca con esquinas redondeadas
+                    g2.setColor(Color.WHITE);
+                    g2.fillRoundRect(0, 10, getWidth(), getHeight(), 30, 25);
+                }
+            }
+        };
+        bottomPanel.setLayout(new BoxLayout(bottomPanel, BoxLayout.Y_AXIS));
+        bottomPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+
+        JLabel label = new JLabel("Ingresa tu clave", SwingConstants.CENTER);
+        label.setForeground(new Color(114, 24, 138));
+        label.setFont(new Font("Arial", Font.BOLD, 18));
+        label.setAlignmentX(Component.CENTER_ALIGNMENT);
+        bottomPanel.add(label);
+        bottomPanel.add(Box.createVerticalStrut(10));
+
+        JPanel circlesPanel = new JPanel();
+        circlesPanel.setLayout(new FlowLayout(FlowLayout.CENTER, 10, 0));
+        circlesPanel.setBackground(Color.WHITE);
+
+        for (int i = 0; i < 4; i++) {
+            JLabel circle = new JLabel("○", SwingConstants.CENTER);
+            circle.setFont(new Font("Arial", Font.BOLD, 24));
+            circle.setForeground(Color.LIGHT_GRAY);
+            circles.add(circle);
+            circlesPanel.add(circle);
+        }
+        bottomPanel.add(circlesPanel);
+        bottomPanel.add(Box.createVerticalStrut(20));
+
+        keypadPanel = new JPanel(new GridLayout(4, 3, 10, 10));
+        keypadPanel.setBackground(Color.WHITE);
+        generateRandomKeypad();
+        bottomPanel.add(keypadPanel);
+
+        JLabel forgotLabel = new JLabel("¿OLVIDASTE TU CLAVE?", SwingConstants.CENTER);
+        forgotLabel.setForeground(new Color(0, 150, 136));
+        forgotLabel.setFont(new Font("Arial", Font.PLAIN, 12));
+        forgotLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+        bottomPanel.add(Box.createVerticalStrut(10));
+        bottomPanel.add(forgotLabel);
+
+        return bottomPanel;
+    }
+
+    private void generateRandomKeypad() {
+        keypadPanel.removeAll();
+        buttons.clear();
+
+        ArrayList<String> numbers = new ArrayList<>();
+        for (int i = 1; i <= 9; i++) {
+            numbers.add(String.valueOf(i));
+        }
+        numbers.add("0");
+
+        Collections.shuffle(numbers);
+
+        for (int i = 0; i < 9; i++) {
+            final String number = numbers.get(i);
+            JButton button = createRoundedButton(number, new Color(237, 235, 243), null);
+            button.addActionListener(e -> handleButtonClick(number));
+            buttons.add(button);
+            keypadPanel.add(button);
+        }
+
+        JButton fingerprintButton = createWhiteButton("🔒");
+        fingerprintButton.addActionListener(e -> JOptionPane.showMessageDialog(this, "Profe, solo es de adorno"));
+        keypadPanel.add(fingerprintButton);
+
+        final String zero = numbers.get(9);
+        JButton zeroButton = createRoundedButton(zero, new Color(237, 235, 243), null);
+        zeroButton.addActionListener(e -> handleButtonClick(zero));
+        buttons.add(zeroButton);
+        keypadPanel.add(zeroButton);
+
+        JButton clearButton = createWhiteButton("C");
+        clearButton.addActionListener(e -> resetPasswordField());
+        keypadPanel.add(clearButton);
+
+        keypadPanel.revalidate();
+        keypadPanel.repaint();
+    }
+
+    private JButton createRoundedButton(String text, Color backgroundColor, Color borderColor) {
+        JButton button = new JButton(text) {
+            @Override
+            protected void paintComponent(Graphics g) {
+                if (g instanceof Graphics2D) {
+                    Graphics2D g2 = (Graphics2D) g;
+                    g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                    g2.setColor(backgroundColor != null ? backgroundColor : new Color(237, 235, 243));
+                    g2.fillRoundRect(0, 0, getWidth(), getHeight(), 20, 20);
+                }
+                super.paintComponent(g);
+            }
+
+            @Override
+            public void paintBorder(Graphics g) {
+                if (borderColor != null && g instanceof Graphics2D) {
+                    Graphics2D g2 = (Graphics2D) g;
+                    g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                    g2.setColor(borderColor);
+                    g2.drawRoundRect(0, 0, getWidth() - 1, getHeight() - 1, 20, 20);
+                }
+            }
+        };
+        button.setFont(new Font("Arial", Font.BOLD, 18));
+        button.setForeground(Color.BLACK);
+        button.setFocusPainted(false);
+        button.setContentAreaFilled(false);
+        button.setOpaque(false);
+        button.setPreferredSize(new Dimension(60, 60));
+        return button;
+    }
+
+    private JButton createWhiteButton(String text) {
+        JButton button = new JButton(text);
+        button.setFont(new Font("Arial", Font.BOLD, 18));
+        button.setForeground(Color.BLACK);
+        button.setBackground(Color.WHITE);
+        button.setFocusPainted(false);
+        button.setContentAreaFilled(true);
+        button.setOpaque(true);
+        button.setBorder(null);
+        button.setPreferredSize(new Dimension(60, 60));
+        return button;
+    }
+
+    private void handleButtonClick(String digit) {
+        if (currentPassword.length() < 4) {
+            circles.get(currentPassword.length()).setText("●");
+            circles.get(currentPassword.length()).setForeground(Color.BLACK);
+            currentPassword.append(digit);
+        }
+
+        if (currentPassword.length() == 4) {
+            verifyPassword();
+        }
+    }
+
+    private void verifyPassword() {
+        if (currentPassword.toString().equals(PASSWORD)) {
+            JOptionPane.showMessageDialog(this, "Acceso concedido");
+            System.exit(0);
+        } else {
+            intentosRestantes--;
+            if (intentosRestantes > 0) {
+                JOptionPane.showMessageDialog(this, "Contraseña incorrecta. Intentos restantes: " + intentosRestantes);
+                resetPasswordField();
+                generateRandomKeypad();
+            } else {
+                JOptionPane.showMessageDialog(this, "App bloqueada. Sin intentos restantes.");
+                for (JButton button : buttons) {
+                    button.setEnabled(false);
+                }
+            }
+        }
+    }
+
+    private void resetPasswordField() {
+        for (JLabel circle : circles) {
+            circle.setText("○");
+            circle.setForeground(Color.LIGHT_GRAY);
+        }
+        currentPassword.setLength(0);
+    }
+
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(Login::new);
+    }
+}

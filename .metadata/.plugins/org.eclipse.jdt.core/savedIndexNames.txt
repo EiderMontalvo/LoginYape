@@ -1,0 +1,4 @@
+INDEX VERSION 1.134+C:\Users\anonimo\Documents\SENATI\2do CICLO\java fundamentals\204 IA T3 Sánchez - Yape\.metadata\.plugins\org.eclipse.jdt.core
+469970334.index
+3687883903.index
+1865797976.index
